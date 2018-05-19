@@ -22,6 +22,9 @@ SaltStack automatically collects junos show command output on the "faulty" JUNOS
 - Collects data from Junos devices (JTI native telemetry and SNMP)  
 - Generates webhooks notifications (HTTP POST with a JSON body) to SaltStack when the condition of an alarm is observed. The JSON body provides the device name and other details
 
+## Gitlab  
+- This SaltStack setup uses a gitlab server for external pillars (variables) and as a remote file server (templates, sls files, ...).  
+
 ## SaltStack: 
 - In addition to the Salt master, Salt Junos proxy minions are required (one process per Junos device is required)  
 - The Salt master listens to webhooks 
@@ -222,6 +225,48 @@ Sensor Information :
         Forwarding-class                    : 255
 
 ```
+
+# Gitlab
+
+This SaltStack setup uses a gitlab server for external pillars and as a remote file server.  
+
+## Install Gitlab
+
+There is a Gitlab docker image available https://hub.docker.com/r/gitlab/gitlab-ce/
+
+You first need to install docker. This step is not covered by this documentation.  
+
+Then:  
+
+Pull the image: 
+```
+# docker pull gitlab/gitlab-ce
+```
+
+Verify: 
+```
+# docker images
+REPOSITORY                   TAG                 IMAGE ID            CREATED             SIZE
+gitlab/gitlab-ce             latest              09b815498cc6        6 months ago        1.33GB
+```
+
+Instanciate a container: 
+```
+docker run -d --rm --name gitlab -p 9080:80 gitlab/gitlab-ce
+```
+Verify:
+```
+# docker ps
+CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS                PORTS                                                 NAMES
+9e8330425d9c        gitlab/gitlab-ce             "/assets/wrapper"        5 months ago        Up 5 days (healthy)   443/tcp, 0.0.0.0:3022->22/tcp, 0.0.0.0:9080->80/tcp   gitlab
+```
+## Configure Gitlab
+
+Create the organization ```organization```.    
+Create the repositories ```network_parameters``` and ```network_model``` in the organization ```organization```.      
+The repository ```network_parameters``` is used for SaltStack external pillars.    
+The repository ```network_model``` is used as an external file server for SaltStack   
+
 
 # SaltStack 
 
