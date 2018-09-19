@@ -2,7 +2,7 @@
 Appformix is used for network devices monitoring.  
 Appformix send webhook notifications to SaltStack.   
 The webhook notifications provides the device name and other details.  
-SaltStack automatically collects junos show commands output on the "faulty" JUNOS device and archives the output on a Git server.    
+SaltStack automatically collects junos show commands on the "faulty" JUNOS device and archives the output on a Git server.    
 ![Appformix-SaltStack-Junos-Git.png](Appformix-SaltStack-Junos-Git.png)  
 
 # Demo building blocks: 
@@ -36,11 +36,12 @@ SaltStack automatically collects junos show commands output on the "faulty" JUNO
 
 ## Gitlab  
 - This SaltStack setup uses a gitlab server for external pillars (variables)
-- This SaltStack setup uses the gitlab server as a remote file server 
-- Junos show commands output is automatically saved on the Gitlab server
+- This SaltStack setup uses a gitlab server as a remote files server 
+- Junos show commands output is automatically saved on a Gitlab server
 
 ## SaltStack: 
-- Salt master, minion, proxy (one proxy process per Junos device), webhook engine.   
+- One master, one minion, proxies (one proxy process per Junos device), webhook engine.  
+- All in one setup with all above SaltStack components in the same Ubuntu host
 - The Salt master listens to webhooks 
 - The Salt master generates a ZMQ messages to the event bus when a webhook notification is received. The ZMQ message has a tag and data. The data structure is a dictionary, which contains information about the event.
 - The Salt reactor binds sls files to event tags. The reactor has a list of event tags to be matched, and each event tag has a list of reactor SLS files to be run. So these sls files define the SaltStack reactions.
@@ -177,11 +178,11 @@ lab@vmx-1-vcp> show agent sensors
 If Appformix has serveral ip addresses, and you want to configure the network devices to use a different IP address than the one configured by appformix for telemetry server, execute the python script [**telemetry.py**](configure_junos/telemetry.py). 
 The python script [**telemetry.py**](configure_junos/telemetry.py) renders the template [**telemetry.j2**](configure_junos/telemetry.j2) using the variables [**network_devices.yml**](configure_appformix/network_devices.yml). The rendered file is [**telemetry.conf**](configure_junos/telemetry.conf). This file is then loaded and committed on all network devices used with JTI telemetry.  
 
-Requirement: This script uses the junos-eznc python library so you need first to install it.  
-
 ```
 more configure_appformix/network_devices.yml
 ```
+Requirement: This script uses the junos-eznc python library so you need first to install it.  
+
 ```
 python configure_junos/telemetry.py
 configured device 172.30.52.155 with telemetry server ip 192.168.1.100
@@ -354,10 +355,10 @@ $ watch -n 10 'docker ps'
 
 Verify you can access to Gitlab GUI: 
 Access Gitlab GUI with a browser on port 9080.  
-http://gitlab_ip_address:9080
+http://gitlab_ip_address:9080  
 Gitlab user is ```root```    
 Create a password ```password```  
-Sign in with ```root``` and ```password```  
+Sign in with ```root``` and ```password```    
 
 ## Configure Gitlab
 
