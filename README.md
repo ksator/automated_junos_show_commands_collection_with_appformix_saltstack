@@ -572,6 +572,10 @@ The Salt Junos proxy has some requirements (```junos-eznc``` python library and 
 
 ssh to the Salt master and copy this [SaltStack master configuration file](master) in the file ```/etc/salt/master```  
 
+```
+cp automated_junos_show_commands_collection_with_appformix_saltstack/master /etc/salt/master
+more /etc/salt/master
+```
 So:
 - the Salt master is listening webhooks on port 5001. It generates equivalents ZMQ messages to the event bus
 - external pillars are in the gitlab repository ```organization/network_parameters```  (master branch)
@@ -611,6 +615,10 @@ To check the status, you can run these commands:
 
 Copy the [minion configuration file](minion) in the file ```/etc/salt/minion```
 
+```
+cp automated_junos_show_commands_collection_with_appformix_saltstack/minion /etc/salt/minion
+more /etc/salt/minion
+```
 
 #### Restart the salt-minion service
 
@@ -644,7 +652,7 @@ To list all public keys:
 ```
 To accept a specified public key:
 ```
-# salt-key -a minion1 -y
+# salt-key -a saltstack_minion_id -y
 ```
 Or, to accept all pending keys:
 ```
@@ -655,11 +663,11 @@ Or, to accept all pending keys:
 
 Run this command to make sure the minion is up and responding to the master. This is not an ICMP ping. 
 ```
-# salt minion1 test.ping
+# salt saltstack_minion_id test.ping
 ```
 Run this additionnal test  
 ```
-# salt "minion1" cmd.run "pwd"
+# salt "saltstack_minion_id" cmd.run "pwd"
 ```
 
 
@@ -672,13 +680,24 @@ The ```top.sls``` file map minions to sls (pillars) files.
 
 #### Pillar configuration
 
-Refer to the [master configuration file](master) to know the location for pillars.  
-It is the repository ```network_parameters```  
-Add at the root of the repository ```network_parameters``` your pillars: 
-- [top.sls](top.sls) 
-- [data_collection.sls](data_collection.sls)
-- [core-rtr-p-01-details.sls](core-rtr-p-01-details.sls) 
-- [core-rtr-p-02-details.sls](core-rtr-p-02-details.sls) 
+Refer to the [master configuration file](master) to know the location for pillars. 
+```
+more /etc/salt/master
+``` 
+So it is the repository ```network_parameters```  
+Run these commands to add the pillars at the root of the repository ```network_parameters```: 
+
+```
+# cp automated_junos_show_commands_collection_with_appformix_saltstack/pillars/* network_parameters/
+# ls network_parameters/
+# cd network_parameters
+# git status
+# git add .
+# git status
+# git commit -m "add pillars"
+# git push origin master
+# cd
+```
 
 
 #### Pillars configuration verification
@@ -698,6 +717,12 @@ $ sudo -s
 #### SaltStack proxy configuration file
 
 Copy the [proxy configuration file](proxy) in the file ```/etc/salt/proxy```  
+
+```
+# cp automated_junos_show_commands_collection_with_appformix_saltstack/proxy /etc/salt/proxy
+# more /etc/salt/proxy
+```
+
 
 #### Start SaltStack proxy 
 
