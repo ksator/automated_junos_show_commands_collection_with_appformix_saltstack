@@ -2,13 +2,15 @@
 Appformix is used for network devices monitoring.  
 Appformix send webhook notifications to SaltStack.   
 The webhook notifications provides the device name and other details.  
-SaltStack automatically collects junos show command output on the "faulty" JUNOS device and archive the output on a Git server.    
+SaltStack automatically collects junos show commands output on the "faulty" JUNOS device and archives the output on a Git server.    
 ![Appformix-SaltStack-Junos-Git.png](Appformix-SaltStack-Junos-Git.png)  
 
 # Demo building blocks: 
 - Juniper devices
 - Appformix
 - SaltStack
+- Gitlab
+- Ubuntu 
 
 # webhooks Overview: 
 - A webhook is notification using an HTTP POST. A webhook is sent by a system A to push data (json body as example) to a system B when an event occurred in the system A. Then the system B will decide what to do with these details. 
@@ -23,7 +25,7 @@ SaltStack automatically collects junos show command output on the "faulty" JUNOS
 - Generates webhooks notifications (HTTP POST with a JSON body) to SaltStack when the condition of an alarm is observed. The JSON body provides the device name and other details
 
 ## Gitlab  
-- This SaltStack setup uses a gitlab server for external pillars (variables) and as a remote file server (templates, sls files, ...).  
+- This SaltStack setup uses a gitlab server for external pillars (variables) and as a remote files server (templates, sls files, ...).  
 
 ## SaltStack: 
 - In addition to the Salt master, Salt Junos proxy minions are required (one process per Junos device is required)  
@@ -43,6 +45,9 @@ SaltStack automatically collects junos show command output on the "faulty" JUNOS
 # Requirements: 
 - Install appformix
 - Configure appformix for network devices monitoring
+- Install Docker 
+- Instanciate a Gitlab docker container
+- Configure Gitlab
 - Install SaltStack
 
 # Appformix  
@@ -226,17 +231,89 @@ Sensor Information :
 
 ```
 
+# Docker 
+
+
+Check if Docker is already installed
+```
+$ docker --version
+```
+
+If it was not already installed, install it:
+```
+$ sudo apt-get update
+```
+```
+$ sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+```
+```
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+```
+```
+$ sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+```
+```
+$ sudo apt-get update
+```
+```
+$ sudo apt-get install docker-ce
+```
+```
+$ sudo docker run hello-world
+```
+```
+$ sudo groupadd docker
+```
+```
+$ sudo usermod -aG docker $USER
+```
+
+Exit the ssh session and open an new ssh session and run these commands to verify you installed Docker properly:  
+```
+$ docker run hello-world
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/engine/userguide/
+```
+```
+$ docker --version
+Docker version 18.03.1-ce, build 9ee9f40
+```
+
 # Gitlab
 
 This SaltStack setup uses a gitlab server for external pillars and as a remote file server.  
 
-## Install Gitlab
+## Instanciate a Gitlab docker container
+
 
 There is a Gitlab docker image available https://hub.docker.com/r/gitlab/gitlab-ce/
 
-You first need to install docker. This step is not covered by this documentation.  
-
-Then:  
 
 Pull the image: 
 ```
@@ -252,7 +329,7 @@ gitlab/gitlab-ce             latest              09b815498cc6        6 months ag
 
 Instanciate a container: 
 ```
-docker run -d --rm --name gitlab -p 9080:80 gitlab/gitlab-ce
+docker run -d --rm --name gitlab -p 3022:22 -p 9080:80 gitlab/gitlab-ce
 ```
 Verify:
 ```
