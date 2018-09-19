@@ -685,7 +685,7 @@ Refer to the [master configuration file](master) to know the location for pillar
 more /etc/salt/master
 ``` 
 So it is the repository ```network_parameters```  
-Run these commands to add the pillars at the root of the repository ```network_parameters```: 
+Run these commands to add the [pillars](pillars) at the root of the repository ```network_parameters```: 
 
 ```
 # cp automated_junos_show_commands_collection_with_appformix_saltstack/pillars/* network_parameters/
@@ -709,7 +709,7 @@ $ sudo -s
 # salt-run pillar.show_pillar
 ```
 ```
-# salt-run pillar.show_pillar core-rtr-p-02
+# salt-run pillar.show_pillar dc-vmx-1
 ```
 
 ### Configure SaltStack proxy 
@@ -786,16 +786,41 @@ Run this additionnal test. It is an execution module. The master asks to the pro
 
 Salt runs a files server to deliver files to minions and proxies.  
 The [master configuration file](master) indicates the location for the files server.  
-We are using an external files server (gitlab repository ```organization/network_model```) 
-Add this content in the gitlab repository ```organization/network_model```: 
-- collect_data_and_archive_to_git.sls
-- collect_show_commands_example_1.sls
-- collect_show_commands_example_2.sls
-- All files from [the directory trigger_alarms](trigger_alarms)
+We are using an external files server (gitlab repository ```organization/network_model```)
 
 
+#### templates for Junos
 
-#### Test your automation content manually from the master
+Run these commands to copy these [Junos templates](templates) at the root of the repository ```network_model```.
+
+```
+# cp automated_junos_show_commands_collection_with_appformix_saltstack/templates/* network_model/
+# cd network_model/
+# git add .
+# git commit -m "add junos templates"
+# git push origin master
+# cd
+```
+
+
+ 
+#### SaltStack state files
+
+Salt establishes a client-server model to bring infrastructure components in line with a given policy (salt state modules, in salt state sls files. kind of Ansible playbooks).
+
+run these commands to copy [these states files](states) at the root of the repository ```network_model```
+
+```
+# cp automated_junos_show_commands_collection_with_appformix_saltstack/states/* network_model/
+# cd network_model/
+# git add *
+# git commit -m "add states files"
+# git push origin master
+# cd
+```
+
+
+### Test your automation content manually from the master
 
 Example with the proxy ```core-rtr-p-01``` (it manages the network device ```core-rtr-p-01```).   
 Run this command on the master to ask to the proxy ```core-rtr-p-01``` to execute the state file [collect_data_and_archive_to_git](collect_data_and_archive_to_git).  
