@@ -527,15 +527,287 @@ The Salt Junos proxy has some requirements (```junos-eznc``` python library and 
 
 ## Configure SaltStack
 
+- Configure SaltStack master
+- Configure SaltStack minion 
+- Configure SaltStack pillars
+- Configure SaltStack proxy 
+- Configure SaltStack files server
+- Configure SaltStack webhook engine
+- Configure SaltStack reactor
+- Configure Junos
 
-### SaltStack master
+### Configure SaltStack master
 
+#### SaltStack master configuration file
 
 ssh to the Salt master and copy this [SaltStack master configuration file](master) in the file ```/etc/salt/master```  
+
 So:
 - the Salt master is listening webhooks on port 5001. It generates equivalents ZMQ messages to the event bus
 - external pillars are in the gitlab repository ```organization/network_parameters```  (master branch)
 - Salt uses the gitlab repository ```organization/network_model``` as a remote files server.  
+
+#### Restart the salt-master service
+
+```
+# service salt-master restart
+```
+#### Verify the salt-master status
+
+To see the Salt processes: 
+```
+# ps -ef | grep salt
+```
+To check the status, you can run these commands: 
+```
+# systemctl status salt-master.service
+```
+```
+# service salt-master status
+```
+#### SaltStack master log
+
+```
+# more /var/log/salt/master 
+```
+```
+# tail -f /var/log/salt/master
+```
+
+### Configure SaltStack minion 
+
+
+#### SaltStack minion configuration file
+
+Copy the [minion configuration file](minion) in the file ```/etc/salt/minion```
+
+
+#### Restart the salt-minion service
+
+
+```
+# service salt-minion restart
+```
+
+#### Verify the salt-minion status
+
+To see the Salt processes: 
+```
+# ps -ef | grep salt
+```
+To check the status: 
+```
+# systemctl status salt-minion.service
+```
+```
+# service salt-minion status
+```
+
+#### Verify the keys 
+
+You need to accept the minions/proxies public keys on the master.   
+
+
+To list all public keys:
+```
+# salt-key -L
+```
+To accept a specified public key:
+```
+# salt-key -a minion1 -y
+```
+Or, to accept all pending keys:
+```
+# salt-key -A -y
+```
+
+#### Verify master <-> minion communication 
+
+Run this command to make sure the minion is up and responding to the master. This is not an ICMP ping. 
+```
+# salt minion1 test.ping
+```
+Run this additionnal test  
+```
+# salt "minion1" cmd.run "pwd"
+```
+
+
+### Configure SaltStack pillars
+
+Pillars are variables     
+They are defined in sls files, with a yaml data structure.  
+There is a ```top``` file.  
+The ```top.sls``` file map minions to sls (pillars) files.  
+
+#### Pillar configuration
+
+Refer to the [master configuration file](master) to know the location for pillars.  
+It is the repository ```network_parameters```  
+Add at the root of the repository ```network_parameters``` your pillars: 
+- [top.sls](top.sls) 
+- [data_collection.sls](data_collection.sls)
+- [core-rtr-p-01-details.sls](core-rtr-p-01-details.sls) 
+- [core-rtr-p-02-details.sls](core-rtr-p-02-details.sls) 
+
+
+#### Pillars configuration verification
+
+```
+$ sudo -s
+```
+```
+# salt-run pillar.show_pillar
+```
+```
+# salt-run pillar.show_pillar core-rtr-p-02
+```
+
+### Configure SaltStack proxy 
+
+#### SaltStack proxy configuration file
+
+Copy the [proxy configuration file](proxy) in the file ```/etc/salt/proxy```  
+
+#### Start SaltStack proxy 
+
+You need one salt proxy process per Junos device.  
+
+to start the proxy as a daemon for the device ```core-rtr-p-01```, run this command
+```
+# sudo salt-proxy -d --proxyid=core-rtr-p-01
+```
+The proxy daemon ```core-rtr-p-01``` manages the network device ```core-rtr-p-01```.  
+
+to start the proxy as a daemon for the device ```core-rtr-p-02```, run this command
+```
+# sudo salt-proxy -d --proxyid=core-rtr-p-02
+```
+The proxy daemon ```core-rtr-p-02``` manages the network device ```core-rtr-p-02```.  
+
+
+you can run this command to start it with a debug log level: 
+```
+# sudo salt-proxy -l debug --proxyid=core-rtr-p-02
+```
+
+To see the SaltStack processes, run this command: 
+```
+# ps -ef | grep salt
+```
+
+#### Verify the keys
+
+You need to accept the minions/proxies public keys on the master.   
+
+
+To list all public keys:
+```
+# salt-key -L
+```
+To accept a specified public key:
+```
+# salt-key -a core-rtr-p-01 -y
+# salt-key -a core-rtr-p-02 -y
+
+```
+Or, to accept all pending keys:
+```
+# salt-key -A -y
+```
+#### Verify master <-> proxy communication
+
+Run this command to make sure the proxies are up and responding to the master. This is not an ICMP ping. 
+```
+# salt 'core-rtr-p-0*' test.ping
+```
+Run this additionnal test. It is an execution module. The master asks to the proxies ```core-rtr-p-01``` and ```core-rtr-p-02``` to use an execution module
+```
+# salt 'core-rtr-p-0*' junos.cli "show version"
+```
+
+
+### Configure SaltStack files server
+
+Salt runs a files server to deliver files to minions and proxies.  
+The [master configuration file](master) indicates the location for the files server.  
+We are using an external files server (gitlab repository ```organization/network_model```) 
+Add this content in the gitlab repository ```organization/network_model```: 
+- collect_data_and_archive_to_git.sls
+- collect_show_commands_example_1.sls
+- collect_show_commands_example_2.sls
+- All files from [the directory trigger_alarms](trigger_alarms)
+
+
+
+#### Test your automation content manually from the master
+
+Example with the proxy ```core-rtr-p-01``` (it manages the network device ```core-rtr-p-01```).   
+Run this command on the master to ask to the proxy ```core-rtr-p-01``` to execute the state file [collect_data_and_archive_to_git](collect_data_and_archive_to_git).  
+```
+salt core-rtr-p-01 state.apply junos.collect_data_and_archive_to_git
+```
+The data collected by the proxy ```core-rtr-p-01``` is archived in the directory [core-rtr-p-01](core-rtr-p-01)  
+
+
+
+### Configure SaltStack webhook engine
+
+Engines are executed in a separate process that is monitored by Salt. If a Salt engine stops, it is restarted automatically.  
+Engines can run on both master and minion.  To start an engine, you need to specify engine information in master/minion config file depending on where you want to run the engine. Once the engine configuration is added, start the master and minion normally. The engine should start along with the salt master/minion.   
+webhook engine listens to webhook, and generates and pusblishes messages on SaltStack 0MQ bus.  
+
+We already added the webhook engine configuration in the [master configuration file](master)  
+So Appformix should his webhook notifications to the master ip address on port 5001. 
+
+```
+# more /etc/salt/master
+```
+
+### Configure SaltStack reactor
+
+#### Configure reactor configuration file
+The reactor binds sls files to event tags. The reactor has a list of event tags to be matched, and each event tag has a list of reactor SLS files to be run. So these sls files define the SaltStack reactions.  
+
+To map some events to reactor sls files, copy the [reactor configuration file](reactor.conf) to ```/etc/salt/master.d/reactor.conf```  
+
+This reactor binds webhook from Appformix to ```/srv/reactor/automate_show_commands.sls```  
+
+#### Restart the salt master service
+```
+# service salt-master restart
+```
+#### Verify the reactor operationnal state: 
+```
+# salt-run reactor.list
+```
+#### Add your reactor sls files
+create a ```/srv/reactor/``` directory    
+```
+# mkdir /srv/reactor/
+```
+and copy the sls reactor file [automate_show_commands.sls](automate_show_commands.sls) to the directory ```/srv/reactor/```
+
+The reactor [automate_show_commands.sls](automate_show_commands.sls) parses the data from the ZMQ message that has the tags ```salt/engines/hook/appformix_to_saltstack``` to extract the device name, and asks to the proxy that manages the faulty device to apply the state file [collect_data_and_archive_to_git](collect_data_and_archive_to_git)
+
+The state file [collect_data_and_archive_to_git](collect_data_and_archive_to_git) executed by the proxy is located in the ```network_model``` repository.  
+It collects show commands and archives the data collected to a git server.  
+
+The list of junos commands to collect is maintained with the variable ```data_collection```  
+the variable ```data_collection``` is defined in the pillar [data_collection.sls](data_collection.sls)  
+Pillars are in the repository ```network_parameters```  
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ### SaltStack Git execution module basic demo
