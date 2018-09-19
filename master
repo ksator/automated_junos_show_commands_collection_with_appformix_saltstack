@@ -1,6 +1,3 @@
-runner_dirs:
-  - /srv/runners
-
 engines:
   - webhook:
       port: 5001
