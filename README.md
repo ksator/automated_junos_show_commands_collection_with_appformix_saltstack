@@ -432,7 +432,7 @@ This is not covered by this documentation.
 
 ## Salt master configuration file 
 
-ssh to the Salt master and copy this [SaltStack master configuration file](master) in the file ```/etc/salt/master```
+ssh to the Salt master and copy this [SaltStack master configuration file](master) in the file ```/etc/salt/master```  
 So:
 - the Salt master is listening webhooks on port 5001. It generates equivalents ZMQ messages to the event bus
 - external pillars are in the gitlab repository ```organization/network_parameters```  (master branch)
@@ -451,14 +451,13 @@ These commands are run from the master.
 Most of these commands are using the Git execution module.   
 So the master is asking to the minion ```core-rtr-p-01``` to execute these commands.    
 ```
-# salt core-rtr-p-01 git.clone /tmp/local_copy git@github.com:JNPRAutomate/appformix_saltstack_show_commands_collection.git identity="/root/.ssh/id_rsa"
+# salt core-rtr-p-01 git.clone /tmp/local_copy git@github.com:ksator/automated_junos_show_commands_collection_with_appformix_saltstack.git identity="/root/.ssh/id_rsa"
 core-rtr-p-01:
     True
 
 # salt core-rtr-p-01 cmd.run "ls /tmp/local_copy"
 core-rtr-p-01:
     README.md
-    collect_junos_show_commands.sls
     ...
 
 # salt core-rtr-p-01 git.config_set user.email me@example.com cwd=/tmp/local_copy
