@@ -1,0 +1,2 @@
+master: your_saltstack_master_ip_address
+id: minion1
