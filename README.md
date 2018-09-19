@@ -405,7 +405,7 @@ config       id_rsa       id_rsa.pub
 ```
 ```
 # more /root/.ssh/config
-Host your_gitlab_ip_address
+Host gitlab_ip_address
 Port 3022
 Host *
 Port 22
