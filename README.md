@@ -745,7 +745,7 @@ Add this content in the gitlab repository ```organization/network_model```:
 Example with the proxy ```core-rtr-p-01``` (it manages the network device ```core-rtr-p-01```).   
 Run this command on the master to ask to the proxy ```core-rtr-p-01``` to execute the state file [collect_data_and_archive_to_git](collect_data_and_archive_to_git).  
 ```
-salt core-rtr-p-01 state.apply junos.collect_data_and_archive_to_git
+salt core-rtr-p-01 state.apply collect_data_and_archive_to_git
 ```
 The data collected by the proxy ```core-rtr-p-01``` is archived in the directory [core-rtr-p-01](core-rtr-p-01)  
 
@@ -1033,7 +1033,7 @@ data_collection:
 Example with the proxy ```core-rtr-p-02``` (it manages the network device ```core-rtr-p-02```).   
 Run this command on the master to ask to the proxy ```core-rtr-p-01``` to execute it.  
 ```
-salt core-rtr-p-01 state.apply junos.collect_data_and_archive_to_git
+salt core-rtr-p-01 state.apply collect_data_and_archive_to_git
 ```
 
 The data collected by the proxy ```core-rtr-p-01``` is archived in the directory [core-rtr-p-01](core-rtr-p-01)  
@@ -1076,7 +1076,7 @@ automate_show_commands:
   local.state.apply:
     - tgt: "{{ devicename }}"
     - arg:
-      - junos.collect_data_and_archive_to_git
+      - collect_data_and_archive_to_git
 ```
 
 # Run the demo: 
@@ -1131,7 +1131,7 @@ Add the file [generate_traffic.sls](trigger_alarms/generate_traffic.sls) to the 
 
 And run this command on the master:   
 ```
-# salt "core-rtr-p-02" state.apply junos.generate_traffic
+# salt "core-rtr-p-02" state.apply generate_traffic
 ```
 ### Change interface speed on a router
 
@@ -1139,7 +1139,7 @@ Add the file [change_int_speed.sls](trigger_alarms/change_int_speed.sls) to the 
 Add the file [speed.set](trigger_alarms/speed.set) to the directory ```template``` of the gitlab repository ```organization/network_model``` (```gitfs_remotes```).    
 Run this command on the master:   
 ```
-# salt "core-rtr-p-02" state.apply junos.change_int_speed
+# salt "core-rtr-p-02" state.apply change_int_speed
 # salt "core-rtr-p-02" junos.cli "show system commit"
 # salt "core-rtr-p-02" junos.cli "show configuration | compare rollback 1"
 # salt "core-rtr-p-02" junos.cli "show configuration interfaces ge-0/0/1"
@@ -1151,7 +1151,7 @@ Add the file [change_mtu.sls](trigger_alarms/change_mtu.sls) to the directory ``
 Add the file [mtu.set](trigger_alarms/mtu.set) to the directory ```template``` of the gitlab repository ```organization/network_model``` (```gitfs_remotes```).    
 Run this command on the master:   
 ```
-# salt "core-rtr-p-02" state.apply junos.change_mtu
+# salt "core-rtr-p-02" state.apply change_mtu
 # salt "core-rtr-p-02" junos.cli "show system commit"
 # salt "core-rtr-p-02" junos.cli "show configuration | compare rollback 1"
 # salt "core-rtr-p-02" junos.cli "show configuration interfaces ge-0/0/1"
