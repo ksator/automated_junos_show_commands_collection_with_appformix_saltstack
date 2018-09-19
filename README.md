@@ -361,9 +361,15 @@ Access Gitlab GUI with a browser on port 9080. Gitlab user is ```root```
 ### Create repositories
 
 Create the group ```organization```.    
-Create the repositories ```network_parameters``` and ```network_model``` in the group ```organization```.      
-The repository ```network_parameters``` is used for SaltStack external pillars.    
-The repository ```network_model``` is used as an external files server for SaltStack   
+
+Create in the group ```organization``` the repositories:
+   - ```network_parameters``` (Public, add Readme)
+   - ```network_model``` (Public, add Readme) 
+   - ```data_collected``` (Public, add Readme)
+
+the repository ```network_parameters``` is used for SaltStack external pillars
+the repository ```network_model``` is used as an external files server for SaltStack
+the repository ```data_collected``` is used to archive the output of junos show commands
 
 ### Add your public key to Gitlab
 
@@ -419,7 +425,29 @@ $ sudo -s
 
 ### Verify you can use Git and Gitlab
 
-Git clone the repositories ```network_parameters``` and ```network_model```
+Clone all the repositories:
+```
+$ sudo -s
+# git clone git@gitlab_ip_address:organization/network_parameters.git
+# git clone git@gitlab_ip_address:organization/network_model.git
+# git clone git@gitlab_ip_address:organization/data_collected.git
+# ls
+# cd network_parameters
+# git remote -v
+# git branch 
+# ls
+# vi README.md
+# git status
+# git diff README.md
+# git add README.md
+# git status
+# git commit -m 'first commit'
+# git log --oneline
+# git log
+# git push origin master
+# cd
+```
+
 
 # SaltStack 
 
