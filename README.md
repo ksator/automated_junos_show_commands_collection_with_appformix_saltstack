@@ -425,10 +425,111 @@ Git clone the repositories ```network_parameters``` and ```network_model```
 
 # SaltStack 
 
-## Install the master and a minion and junos proxy
-This is not covered by this documentation.
+## Install SaltStack 
 
-## Salt master configuration file 
+- Install master
+- Install minion 
+- Install requirements for SaltStack Junos proxy
+
+### Install master
+
+Check if SaltStack master is already installed
+```
+$ sudo -s
+```
+```
+# salt --version
+```
+```
+# salt-master --version
+```
+if SaltStack master was not already installed, then install it: 
+```
+$ sudo -s
+```
+```
+# wget -O - https://repo.saltstack.com/apt/ubuntu/16.04/amd64/archive/2018.3.2/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
+```
+Add ```deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/archive/2018.3.2 xenial main``` in the file ```/etc/apt/sources.list.d/saltstack.list```
+```
+# touch /etc/apt/sources.list.d/saltstack.list
+```
+```
+# nano /etc/apt/sources.list.d/saltstack.list
+```
+```
+# more /etc/apt/sources.list.d/saltstack.list
+deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/archive/2018.3.2 xenial main
+```
+```
+# sudo apt-get update
+```
+```
+# sudo apt-get install salt-master
+```
+Verify you installed properly SaltStack master 
+```
+# salt --version
+salt 2018.3.2 (Oxygen)
+```
+```
+# salt-master --version
+salt-master 2018.3.2 (Oxygen)
+```
+
+### Install Minion
+
+Check if SaltStack minion is already installed
+```
+# salt-minion --version
+```
+if SaltStack minion was not already installed, then install it: 
+```
+$ sudo -s
+```
+```
+# wget -O - https://repo.saltstack.com/apt/ubuntu/16.04/amd64/archive/2018.3.2/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
+```
+Add ```deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/archive/2018.3.2 xenial main``` in the file ```/etc/apt/sources.list.d/saltstack.list```
+```
+# touch /etc/apt/sources.list.d/saltstack.list
+```
+```
+# nano /etc/apt/sources.list.d/saltstack.list
+```
+```
+# more /etc/apt/sources.list.d/saltstack.list
+deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/archive/2018.3.2 xenial main
+```
+```
+# sudo apt-get update
+```
+```
+$ sudo apt-get install salt-minion
+```
+And verify if salt-minion was installed properly installation 
+```
+# salt-minion --version
+salt-minion 2018.3.2 (Oxygen)
+```
+
+### Install requirements for SaltStack Junos proxy 
+
+The Salt Junos proxy has some requirements (```junos-eznc``` python library and other dependencies). 
+
+```
+# apt-get install python-pip
+# pip list
+# apt-get --auto-remove --yes remove python-openssl
+# pip install pyOpenSSL junos-eznc jxmlease jsnapy
+# pip list | grep "pyOpenSSL\|junos-eznc\|jxmlease\|jsnapy"
+```
+
+## Configure SaltStack
+
+
+### SaltStack master
+
 
 ssh to the Salt master and copy this [SaltStack master configuration file](master) in the file ```/etc/salt/master```  
 So:
@@ -437,7 +538,7 @@ So:
 - Salt uses the gitlab repository ```organization/network_model``` as a remote files server.  
 
 
-## SaltStack Git execution module basic demo
+### SaltStack Git execution module basic demo
 
 ssh to the Salt master.
 
@@ -520,7 +621,7 @@ core-rtr-p-01:
 ```
 The above commands pushed the file [test.txt](test.txt) to this repository  
 
-## Test your Junos proxy daemons
+### Test your Junos proxy daemons
 
 ssh to the Salt master.
 
@@ -622,13 +723,13 @@ Run this command on the master to ask to the proxy core-rtr-p-01 to execute the 
 ```
 # salt core-rtr-p-01 state.apply collect_show_commands_example_2
 ```
-## sls file to collect junos show commands and to archive the output to git
+### sls file to collect junos show commands and to archive the output to git
 
 This sls file [collect_data_and_archive_to_git.sls](collect_data_and_archive_to_git.sls) collectes data from junos devices (show commands) and archive the data collected on a git server  
 
 Add this file in the ```junos``` directory of the ```organization/network_model``` repository (```gitfs_remotes```) .  
 
-## Pillars 
+### Pillars 
 
 Here's an example for the ```top.sls``` file at the root of the gitlab repository ```organization/network_parameters``` (```ext_pillar```)  
 ```
@@ -655,7 +756,7 @@ data_collection:
    - command: show configuration
 ```
 
-## Test your automation content manually from the master
+### Test your automation content manually from the master
 
 Example with the proxy ```core-rtr-p-02``` (it manages the network device ```core-rtr-p-02```).   
 Run this command on the master to ask to the proxy ```core-rtr-p-01``` to execute it.  
@@ -666,7 +767,7 @@ salt core-rtr-p-01 state.apply junos.collect_data_and_archive_to_git
 The data collected by the proxy ```core-rtr-p-01``` is archived in the directory [core-rtr-p-01](core-rtr-p-01)  
 
 
-##  Update the Salt reactor
+###  Update the Salt reactor
 
 Update the Salt reactor file  
 The reactor binds sls files to event tags. The reactor has a list of event tags to be matched, and each event tag has a list of reactor SLS files to be run. So these sls files define the SaltStack reactions.  
