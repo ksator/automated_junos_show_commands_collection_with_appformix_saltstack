@@ -353,8 +353,11 @@ $ watch -n 10 'docker ps'
 ```
 
 Verify you can access to Gitlab GUI: 
-Access Gitlab GUI with a browser on port 9080. Gitlab user is ```root```    
-
+Access Gitlab GUI with a browser on port 9080.  
+http://gitlab_ip_address:9080
+Gitlab user is ```root```    
+Create a password ```password```  
+Sign in with ```root``` and ```password```  
 
 ## Configure Gitlab
 
