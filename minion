@@ -1,2 +1,2 @@
-master: your_saltstack_master_ip_address
-id: minion1
+master: saltstack_master_ip_address
+id: saltstack_minion_id
