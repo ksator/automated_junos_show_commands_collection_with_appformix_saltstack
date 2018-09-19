@@ -2,23 +2,17 @@ runner_dirs:
   - /srv/runners
 
 engines:
-  - junos_syslog:
-      port: 516
   - webhook:
       port: 5001
 
 ext_pillar:
   - git:
-    - master git@gitlab:organization/network_parameters.git
+    - master git@your_gitlab_ip_address:organization/network_parameters.git
 
 fileserver_backend:
   - git
-  - roots
+
 
 gitfs_remotes:
-  - ssh://git@gitlab/organization/network_model.git
+  - ssh://git@your_gitlab_ip_address/organization/network_model.git
 
-file_roots:
-  base:
-    - /srv/salt
-    - /srv/local
