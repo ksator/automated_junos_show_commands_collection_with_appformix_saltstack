@@ -109,6 +109,8 @@ ansible-playbook -i inventory appformix_standalone.yml
 
 You need to configure the network devices with the SNMP community used by Appformix. The script [**snmp.py**](configure_junos/snmp.py) renders the template [**snmp.j2**](configure_junos/snmp.j2) using the variables [**network_devices.yml**](configure_appformix/network_devices.yml). The rendered file is [**snmp.conf**](configure_junos/snmp.conf). This file is then loaded and committed on all network devices used with SNMP monitoring.
  
+Requirement: This script uses the junos-eznc python library so you need first to install it.  
+
 ```
 python configure_junos/snmp.py
 configured device 172.30.52.85 with snmp community public
@@ -169,6 +171,8 @@ lab@vmx-1-vcp> show agent sensors
 
 If Appformix has serveral ip addresses, and you want to configure the network devices to use a different IP address than the one configured by appformix for telemetry server, execute the python script [**telemetry.py**](configure_junos/telemetry.py). 
 The python script [**telemetry.py**](configure_junos/telemetry.py) renders the template [**telemetry.j2**](configure_junos/telemetry.j2) using the variables [**network_devices.yml**](configure_appformix/network_devices.yml). The rendered file is [**telemetry.conf**](configure_junos/telemetry.conf). This file is then loaded and committed on all network devices used with JTI telemetry.  
+
+Requirement: This script uses the junos-eznc python library so you need first to install it.  
 
 ```
 more configure_appformix/network_devices.yml
@@ -337,13 +341,78 @@ Verify:
 CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS                PORTS                                                 NAMES
 9e8330425d9c        gitlab/gitlab-ce             "/assets/wrapper"        5 months ago        Up 5 days (healthy)   443/tcp, 0.0.0.0:3022->22/tcp, 0.0.0.0:9080->80/tcp   gitlab
 ```
+
+Wait for Gitlab container status to be ```healthy```. It takes about 2 mns.   
+```
+$ watch -n 10 'docker ps'
+```
+
+Verify you can access to Gitlab GUI: 
+Access Gitlab GUI with a browser. Gitlab user is ```root```    
+
+
 ## Configure Gitlab
 
-Create the organization ```organization```.    
-Create the repositories ```network_parameters``` and ```network_model``` in the organization ```organization```.      
+Create the group ```organization```.    
+Create the repositories ```network_parameters``` and ```network_model``` in the group ```organization```.      
 The repository ```network_parameters``` is used for SaltStack external pillars.    
-The repository ```network_model``` is used as an external file server for SaltStack   
+The repository ```network_model``` is used as an external files server for SaltStack   
 
+### Add your public key to Gitlab
+
+The Ubuntu host will inteact with the Gitlab server. 
+
+#### Generate ssh keys
+```
+$ sudo -s
+```
+```
+# ssh-keygen -f /root/.ssh/id_rsa -t rsa -N ''
+```
+```
+# ls /root/.ssh/
+id_rsa  id_rsa.pub  
+```
+#### Add the public key to Gitlab  
+Copy the public key:
+```
+# more /root/.ssh/id_rsa.pub
+```
+Access Gitlab GUI, and add the public key to ```User Settings``` > ```SSH Keys```
+
+### Update your ssh configuration
+```
+$ sudo -s
+```
+```
+# touch /root/.ssh/config
+```
+```
+# ls /root/.ssh/
+config       id_rsa       id_rsa.pub  
+```
+```
+# vi /root/.ssh/config
+```
+```
+# more /root/.ssh/config
+Host <gitlab ip address>
+Port 3022
+Host *
+Port 22
+```
+
+### Configure your Git client
+
+```
+$ sudo -s
+# git config --global user.email "you@example.com"
+# git config --global user.name "Your Name"
+```
+
+### Verify you can use Git and Gitlab
+
+Git clone the repositories ```network_parameters``` and ```network_model```
 
 # SaltStack 
 
