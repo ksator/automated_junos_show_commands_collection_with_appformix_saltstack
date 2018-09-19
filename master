@@ -4,12 +4,12 @@ engines:
 
 ext_pillar:
   - git:
-    - master git@your_gitlab_ip_address:organization/network_parameters.git
+    - master git@gitlab_ip_address:organization/network_parameters.git
 
 fileserver_backend:
   - git
 
 
 gitfs_remotes:
-  - ssh://git@your_gitlab_ip_address/organization/network_model.git
+  - ssh://git@gitlab_ip_address/organization/network_model.git
 
