@@ -407,7 +407,7 @@ config       id_rsa       id_rsa.pub
 ```
 ```
 # more /root/.ssh/config
-Host <gitlab ip address>
+Host your_gitlab_ip_address
 Port 3022
 Host *
 Port 22
@@ -432,46 +432,11 @@ This is not covered by this documentation.
 
 ## Salt master configuration file 
 
-ssh to the Salt master and open the salt master configuration file:
-```
-more /etc/salt/master
-```
-
-Make sure the master configuration file has these details:
-```
-engines:
-  - junos_syslog:
-      port: 516
-  - webhook:
-      port: 5001
-```
-```
-ext_pillar:
-  - git:
-    - master git@gitlab:organization/network_parameters.git
-```
-```
-fileserver_backend:
-  - git
-  - roots
-```
-```
-gitfs_remotes:
-  - ssh://git@gitlab/organization/network_model.git
-```
-```
-file_roots:
-  base:
-    - /srv/salt
-    - /srv/local
-```
+ssh to the Salt master and copy this [SaltStack master configuration file](master) in the file ```/etc/salt/master```
 So:
 - the Salt master is listening webhooks on port 5001. It generates equivalents ZMQ messages to the event bus
-runners are in the directory /srv/runners on the Salt master
-- the Salt master is listening junos syslog messages on port 516. It generates equivalents ZMQ messages to the event bus
-- external pillars are in the gitlab repository organization/network_parameters  (master branch)
-- Salt uses the gitlab repository organization/network_model.git this github repository as a remote file server.  
-- Salt uses the directories /srv/salt and /srv/local on the master as a remote file server.  
+- external pillars are in the gitlab repository ```organization/network_parameters```  (master branch)
+- Salt uses the gitlab repository ```organization/network_model``` as a remote files server.  
 
 
 ## SaltStack Git execution module basic demo
