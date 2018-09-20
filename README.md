@@ -829,7 +829,7 @@ run these commands to copy [these states files](states) at the root of the repos
 Example with the proxy ```dc-vmx-1``` (it manages the network device ```dc-vmx-1```).   
 Run this command on the master to ask to the proxy ```dc-vmx-1``` to execute the state file [collect_data_and_archive_to_git](states/collect_data_and_archive_to_git).  
 ```
-salt core-rtr-p-01 state.apply collect_data_and_archive_to_git
+salt dc-vmx-1 state.apply collect_data_and_archive_to_git
 ```
 The data collected by the proxy ```dc-vmx-1``` is archived in the directory [dc-vmx-1](dc-vmx-1) of the gitlab repository ```data_collected```  
 
