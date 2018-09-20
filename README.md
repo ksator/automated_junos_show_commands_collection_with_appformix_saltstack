@@ -1,17 +1,30 @@
-# Demo overview:  
+# Documentation structure
+
+[About the demo](#about-the-demo) 
+[Requirements to run the demo](#requirements-to-run-the-demo)  
+[Appformix](#appformix)  
+[Docker](#docker)  
+[Gitlab](#gitlab)  
+[SaltStack](#SaltStack)  
+[Familiarize yourself with this setup](#familiarize-yourself-with-this-setup)  
+[Run the demo](#run-the-demo)  
+
+# About the demo 
+
+## Demo overview 
 Appformix is used for network devices monitoring.  
 Appformix send webhook notifications to SaltStack.   
 The webhook notifications provides the device name and other details.  
 SaltStack automatically collects junos show commands on the "faulty" JUNOS device and archives the output on a Git server.    
 ![Appformix-SaltStack-Junos-Git.png](Appformix-SaltStack-Junos-Git.png)  
 
-# webhooks Overview: 
+## webhooks Overview 
 - A webhook is notification using an HTTP POST. A webhook is sent by a system A to push data (json body as example) to a system B when an event occurred in the system A. Then the system B will decide what to do with these details. 
 - Appformix supports webhooks. A notification is generated when the condition of an alarm is observed. You can configure an alarm to post notifications to an external HTTP endpoint. AppFormix will post a JSON payload to the endpoint for each notification.
 - SaltStack can listens to webhooks and generate equivalents ZMQ messages to the event bus  
 - SaltStack can reacts to webhooks
 
-# Demo building blocks: 
+## Demo building blocks
 - Junos devices
 - Appformix
 - Ubuntu with: 
@@ -19,28 +32,27 @@ SaltStack automatically collects junos show commands on the "faulty" JUNOS devic
     - Docker
     - Gitlab
 
+## Building blocks role 
 
-# Building blocks role: 
-
-## Appformix:  
+### Appformix
 - Collects data from Junos devices (JTI native telemetry and SNMP)  
 - Generates webhooks notifications (HTTP POST with a JSON body) to SaltStack when the condition of an alarm is observed. The JSON body provides the device name and other details
 
-## Junos devices: 
+### Junos devices 
 - Several Junos devices. 
 - They are monitored by Appformix
 - Based on webhook notifications from Appformix, SaltStack collects junos show commands on the "faulty" Junos and archives the collected data to a Gitlab repository  
 
-## Ubuntu
+### Ubuntu
 - with Docker and SaltStack installed.  
 - A Gitlab docker container is instanciated.  
 
-## Gitlab  
+### Gitlab  
 - This SaltStack setup uses a gitlab server for external pillars (variables)
 - This SaltStack setup uses a gitlab server as a remote files server 
 - Junos show commands output is automatically saved on a Gitlab server
 
-## SaltStack: 
+### SaltStack
 - One master, one minion, proxies (one proxy process per Junos device), webhook engine.  
 - All in one setup with all above SaltStack components in the same Ubuntu host
 - The Salt master listens to webhooks 
@@ -49,7 +61,7 @@ SaltStack automatically collects junos show commands on the "faulty" JUNOS devic
 - The sls reactor file used in this content does the following: it parses the data from the ZMQ message to extract the network device name. It then ask to the proxy that manages the "faulty" Junos device to execute an sls file.
 - The sls file executed by the proxy minion collects junos show commands output and archives the collected data to a Gitlab repository
 
-# Requirements: 
+# Requirements to run the demo 
 - Install appformix
 - Configure appformix for network devices monitoring
 - Install Docker 
@@ -566,7 +578,6 @@ The Salt Junos proxy has some requirements (```junos-eznc``` python library and 
 - Configure SaltStack files server
 - Configure SaltStack webhook engine
 - Configure SaltStack reactor
-- Configure Junos
 
 ### Configure SaltStack master
 
