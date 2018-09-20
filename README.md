@@ -933,8 +933,8 @@ The files [collect_show_commands_example_1.sls](collect_show_commands_example_1.
 Run this command on the master to ask to the proxy ```dc-vmx-1``` to execute the state file  [collect_show_commands_example_1.sls](states/collect_show_commands_example_1.sls).
 ```
 # salt dc-vmx-1 state.apply collect_show_commands_example_1
-# ls /tmp/show_chassis_hardware.txt
-# ls /tmp/show_version.txt
+# more /tmp/show_chassis_hardware.txt
+# more /tmp/show_version.txt
 ```
 
 ### Syntax 2
@@ -944,8 +944,8 @@ Run this command on the master to ask to the proxy ```dc-vmx-1``` to execute the
 Run this command on the master to ask to the proxy ```dc-vmx-1``` to execute the state file  [collect_show_commands_example_2.sls](states/collect_show_commands_example_2.sls).
 ```
 # salt dc-vmx-1 state.apply collect_show_commands_example_2
-# ls /tmp/show_chassis_hardware.txt
-# ls /tmp/show_version.txt
+# more /tmp/show_chassis_hardware.txt
+# more /tmp/show_version.txt
 ```
 
 
