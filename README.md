@@ -1009,15 +1009,21 @@ Salt provides a runner that displays events in real-time as they are received on
 ## Trigger an alarm  to get a webhook notification sent by Appformix to SaltStack 
 
 Either you DIY, or, depending on the alarms you set, you can use one the automation content available in the repository.  
-Here's how to use the automation content available in the repository.   
+Here's how to use the automation content available in the repository to trigger an alarm.   
 
 ### generate traffic between 2 routers 
+
+[generate_traffic.sls](states/generate_traffic.sls)  
 
 ```
 # more network_model/generate_traffic.sls
 # salt "dc-vmx-1" state.apply generate_traffic
 ```
 ### Change interface speed on a router
+
+[change_int_speed.sls](states/change_int_speed.sls)  
+[speed.set](templates/speed.set)  
+
 ```
 # more network_model/change_int_speed.sls
 # more network_model/speed.set   
@@ -1028,6 +1034,9 @@ Here's how to use the automation content available in the repository.
 ```
 
 ### Change MTU on a router
+
+[change_mtu.sls](states/change_mtu.sls)  
+[mtu.set](templates/mtu.set)  
 
 ```
 # more network_model/change_mtu.sls
