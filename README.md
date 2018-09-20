@@ -970,7 +970,7 @@ It has the list of show commands we want SaltStack to collect.
 You can do it from Appformix GUI, settings, Notification Settings, Notification Services, add service.    
 Then:  
 service name: appformix_to_saltstack  
-URL endpoint: provide the Salt master IP and Salt webhook listerner port (```HTTP://192.168.128.174:5001/appformix_to_saltstack``` as example).  
+URL endpoint: provide the Salt master IP and Salt webhook listerner port (```HTTP://saltstack_master_ip_address:5001/appformix_to_saltstack``` as example).  
 setup  
 
 ## Create Appformix alarms, and map these alarms to the webhook you just created.
@@ -993,12 +993,13 @@ notification: custom service,
 services: appformix_to_saltstack,  
 save.
 
-## Watch webhook notifications and ZMQ messages  
+## Verify the salt master receives webhook motifications from Appformix
 
 Run this command on the master to see webhook notifications:
 ```
 # tcpdump port 5001 -XX 
 ```
+## Watch webhook notifications and ZMQ messages  
 
 Salt provides a runner that displays events in real-time as they are received on the Salt master:  
 ```
@@ -1007,43 +1008,38 @@ Salt provides a runner that displays events in real-time as they are received on
 
 ## Trigger an alarm  to get a webhook notification sent by Appformix to SaltStack 
 
-Either you DIY, or, depending on the alarms you set, you can use one the automation content available in the directory [trigger_alarms](trigger_alarms).  
-Here's how to use the automation content available in the directory [trigger_alarms](trigger_alarms).  
+Either you DIY, or, depending on the alarms you set, you can use one the automation content available in the repository.  
+Here's how to use the automation content available in the repository.   
 
 ### generate traffic between 2 routers 
-Add the file [generate_traffic.sls](trigger_alarms/generate_traffic.sls) to the directory ```junos``` of the gitlab repository ```organization/network_model``` (```gitfs_remotes```).  
 
-And run this command on the master:   
 ```
-# salt "core-rtr-p-02" state.apply generate_traffic
+# more network_model/generate_traffic.sls
+# salt "dc-vmx-1" state.apply generate_traffic
 ```
 ### Change interface speed on a router
-
-Add the file [change_int_speed.sls](trigger_alarms/change_int_speed.sls) to the directory ```junos``` of the gitlab repository ```organization/network_model``` (```gitfs_remotes```).  
-Add the file [speed.set](trigger_alarms/speed.set) to the directory ```template``` of the gitlab repository ```organization/network_model``` (```gitfs_remotes```).    
-Run this command on the master:   
 ```
-# salt "core-rtr-p-02" state.apply change_int_speed
-# salt "core-rtr-p-02" junos.cli "show system commit"
-# salt "core-rtr-p-02" junos.cli "show configuration | compare rollback 1"
-# salt "core-rtr-p-02" junos.cli "show configuration interfaces ge-0/0/1"
+# more network_model/change_int_speed.sls
+# more network_model/speed.set   
+# salt "dc-vmx-1" state.apply change_int_speed
+# salt "dc-vmx-1" junos.cli "show system commit"
+# salt "dc-vmx-1" junos.cli "show configuration | compare rollback 1"
+# salt "dc-vmx-1" junos.cli "show configuration interfaces ge-0/0/1"
 ```
 
 ### Change MTU on a router
 
-Add the file [change_mtu.sls](trigger_alarms/change_mtu.sls) to the directory ```junos``` of the gitlab repository ```organization/network_model``` (```gitfs_remotes```).  
-Add the file [mtu.set](trigger_alarms/mtu.set) to the directory ```template``` of the gitlab repository ```organization/network_model``` (```gitfs_remotes```).    
-Run this command on the master:   
 ```
-# salt "core-rtr-p-02" state.apply change_mtu
-# salt "core-rtr-p-02" junos.cli "show system commit"
-# salt "core-rtr-p-02" junos.cli "show configuration | compare rollback 1"
-# salt "core-rtr-p-02" junos.cli "show configuration interfaces ge-0/0/1"
+# more network_model/change_mtu.sls
+# more network_model/mtu.set  
+# salt "dc-vmx-1" state.apply change_mtu
+# salt "dc-vmx-1" junos.cli "show system commit"
+# salt "dc-vmx-1" junos.cli "show configuration | compare rollback 1"
+# salt "dc-vmx-1" junos.cli "show configuration interfaces ge-0/0/1"
 ```
 
-## Verify on the git server 
+## Verify on the gitlab server 
 
-The data collected by the proxy ```core-rtr-p-01```  is archived in the directory [core-rtr-p-01](core-rtr-p-01)  
-The data collected by the proxy ```core-rtr-p-02```  is archived in the directory [core-rtr-p-02](core-rtr-p-02)
+The data collected by the proxy ```dc-vmx-1```  is archived in the directory ```dc-vmx-1``` of the gitlab repository ```data_collected```
 
 
