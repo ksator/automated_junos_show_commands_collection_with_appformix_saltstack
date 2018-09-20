@@ -5,6 +5,12 @@ The webhook notifications provides the device name and other details.
 SaltStack automatically collects junos show commands on the "faulty" JUNOS device and archives the output on a Git server.    
 ![Appformix-SaltStack-Junos-Git.png](Appformix-SaltStack-Junos-Git.png)  
 
+# webhooks Overview: 
+- A webhook is notification using an HTTP POST. A webhook is sent by a system A to push data (json body as example) to a system B when an event occurred in the system A. Then the system B will decide what to do with these details. 
+- Appformix supports webhooks. A notification is generated when the condition of an alarm is observed. You can configure an alarm to post notifications to an external HTTP endpoint. AppFormix will post a JSON payload to the endpoint for each notification.
+- SaltStack can listens to webhooks and generate equivalents ZMQ messages to the event bus  
+- SaltStack can reacts to webhooks
+
 # Demo building blocks: 
 - Junos devices
 - Appformix
@@ -13,11 +19,6 @@ SaltStack automatically collects junos show commands on the "faulty" JUNOS devic
     - Docker
     - Gitlab
 
-# webhooks Overview: 
-- A webhook is notification using an HTTP POST. A webhook is sent by a system A to push data (json body as example) to a system B when an event occurred in the system A. Then the system B will decide what to do with these details. 
-- Appformix supports webhooks. A notification is generated when the condition of an alarm is observed. You can configure an alarm to post notifications to an external HTTP endpoint. AppFormix will post a JSON payload to the endpoint for each notification.
-- SaltStack can listens to webhooks and generate equivalents ZMQ messages to the event bus  
-- SaltStack can reacts to webhooks
 
 # Building blocks role: 
 
@@ -55,6 +56,7 @@ SaltStack automatically collects junos show commands on the "faulty" JUNOS devic
 - Instanciate a Gitlab docker container
 - Configure Gitlab
 - Install SaltStack
+- Configure SaltStack
 
 # Appformix  
 
@@ -353,7 +355,7 @@ Wait for Gitlab container status to be ```healthy```. It takes about 2 mns.
 $ watch -n 10 'docker ps'
 ```
 
-Verify you can access to Gitlab GUI: 
+Verify you can access to Gitlab GUI:  
 Access Gitlab GUI with a browser on port 9080.  
 http://gitlab_ip_address:9080  
 Gitlab user is ```root```    
@@ -371,9 +373,9 @@ Create in the group ```organization``` the repositories:
    - ```network_model``` (Public, add Readme) 
    - ```data_collected``` (Public, add Readme)
 
-the repository ```network_parameters``` is used for SaltStack external pillars
-the repository ```network_model``` is used as an external files server for SaltStack
-the repository ```data_collected``` is used to archive the output of junos show commands
+the repository ```network_parameters``` is used for SaltStack external pillars  
+the repository ```network_model``` is used as an external files server for SaltStack  
+the repository ```data_collected``` is used to archive the output of junos show commands  
 
 ### Add your public key to Gitlab
 
@@ -728,22 +730,15 @@ Copy the [proxy configuration file](proxy) in the file ```/etc/salt/proxy```
 
 You need one salt proxy process per Junos device.  
 
-to start the proxy as a daemon for the device ```core-rtr-p-01```, run this command
+to start the proxy as a daemon for the device ```dc-vmx-1```, run this command
 ```
-# sudo salt-proxy -d --proxyid=core-rtr-p-01
+# sudo salt-proxy -d --proxyid=dc-vmx-1
 ```
-The proxy daemon ```core-rtr-p-01``` manages the network device ```core-rtr-p-01```.  
-
-to start the proxy as a daemon for the device ```core-rtr-p-02```, run this command
-```
-# sudo salt-proxy -d --proxyid=core-rtr-p-02
-```
-The proxy daemon ```core-rtr-p-02``` manages the network device ```core-rtr-p-02```.  
-
+The proxy daemon ```dc-vmx-1``` manages the network device ```dc-vmx-1```.  
 
 you can run this command to start it with a debug log level: 
 ```
-# sudo salt-proxy -l debug --proxyid=core-rtr-p-02
+# sudo salt-proxy -l debug --proxyid=dc-vmx-1
 ```
 
 To see the SaltStack processes, run this command: 
@@ -762,9 +757,7 @@ To list all public keys:
 ```
 To accept a specified public key:
 ```
-# salt-key -a core-rtr-p-01 -y
-# salt-key -a core-rtr-p-02 -y
-
+# salt-key -a dc-vmx-1 -y
 ```
 Or, to accept all pending keys:
 ```
@@ -772,13 +765,13 @@ Or, to accept all pending keys:
 ```
 #### Verify master <-> proxy communication
 
-Run this command to make sure the proxies are up and responding to the master. This is not an ICMP ping. 
+Run this command to make sure a proxy is up and responding to the master. This is not an ICMP ping. 
 ```
-# salt 'core-rtr-p-0*' test.ping
+# salt 'dc-vmx-1' test.ping
 ```
-Run this additionnal test. It is an execution module. The master asks to the proxies ```core-rtr-p-01``` and ```core-rtr-p-02``` to use an execution module
+Run this additionnal test. It is an execution module. The master asks to the proxy ```dc-vmx-1``` to use an execution module
 ```
-# salt 'core-rtr-p-0*' junos.cli "show version"
+# salt 'dc-vmx-1' junos.cli "show version"
 ```
 
 
@@ -822,12 +815,12 @@ run these commands to copy [these states files](states) at the root of the repos
 
 ### Test your automation content manually from the master
 
-Example with the proxy ```core-rtr-p-01``` (it manages the network device ```core-rtr-p-01```).   
-Run this command on the master to ask to the proxy ```core-rtr-p-01``` to execute the state file [collect_data_and_archive_to_git](collect_data_and_archive_to_git).  
+Example with the proxy ```dc-vmx-1``` (it manages the network device ```dc-vmx-1```).   
+Run this command on the master to ask to the proxy ```dc-vmx-1``` to execute the state file [collect_data_and_archive_to_git](states/collect_data_and_archive_to_git).  
 ```
 salt core-rtr-p-01 state.apply collect_data_and_archive_to_git
 ```
-The data collected by the proxy ```core-rtr-p-01``` is archived in the directory [core-rtr-p-01](core-rtr-p-01)  
+The data collected by the proxy ```dc-vmx-1``` is archived in the directory [dc-vmx-1](dc-vmx-1) of the gitlab repository ```data_collected```  
 
 
 
@@ -851,7 +844,14 @@ The reactor binds sls files to event tags. The reactor has a list of event tags 
 
 To map some events to reactor sls files, copy the [reactor configuration file](reactor.conf) to ```/etc/salt/master.d/reactor.conf```  
 
+```
+# cp automated_junos_show_commands_collection_with_appformix_saltstack/reactor.conf /etc/salt/master.d/
+# more /etc/salt/master.d/reactor.conf
+```
+
 This reactor binds webhook from Appformix to ```/srv/reactor/automate_show_commands.sls```  
+
+
 
 #### Restart the salt master service
 ```
@@ -866,7 +866,12 @@ create a ```/srv/reactor/``` directory
 ```
 # mkdir /srv/reactor/
 ```
-and copy the sls reactor file [automate_show_commands.sls](automate_show_commands.sls) to the directory ```/srv/reactor/```
+and copy these sls reactor files [reactor](reactor) to the directory ```/srv/reactor/```
+```
+# cp automated_junos_show_commands_collection_with_appformix_saltstack/reactor/* /srv/reactor/
+# ls /srv/reactor/
+# more /srv/reactor/automate_show_commands.sls
+```
 
 The reactor [automate_show_commands.sls](automate_show_commands.sls) parses the data from the ZMQ message that has the tags ```salt/engines/hook/appformix_to_saltstack``` to extract the device name, and asks to the proxy that manages the faulty device to apply the state file [collect_data_and_archive_to_git](collect_data_and_archive_to_git)
 
@@ -874,263 +879,78 @@ The state file [collect_data_and_archive_to_git](collect_data_and_archive_to_git
 It collects show commands and archives the data collected to a git server.  
 
 The list of junos commands to collect is maintained with the variable ```data_collection```  
-the variable ```data_collection``` is defined in the pillar [data_collection.sls](data_collection.sls)  
+the variable ```data_collection``` is defined in the pillars [data_collection.sls](pillars/data_collection.sls)  
 Pillars are in the repository ```network_parameters```  
 
 
+# Familiarize yourself with this setup
 
+## SaltStack Git execution module basic demo
 
-
-
-
-
-
-
-
-
-
-
-### SaltStack Git execution module basic demo
-
-ssh to the Salt master.
-
-On the Salt master, list all the keys.
-```
-salt-key -L
-```
+ssh to the Salt master.  
 These commands are run from the master.   
 Most of these commands are using the Git execution module.   
-So the master is asking to the minion ```core-rtr-p-01``` to execute these commands.    
+So the master is asking to the minion ```saltstack_minion_id``` to execute these commands.    
 ```
-# salt core-rtr-p-01 git.clone /tmp/local_copy git@github.com:ksator/automated_junos_show_commands_collection_with_appformix_saltstack.git identity="/root/.ssh/id_rsa"
-core-rtr-p-01:
-    True
-
-# salt core-rtr-p-01 cmd.run "ls /tmp/local_copy"
-core-rtr-p-01:
-    README.md
-    ...
-
-# salt core-rtr-p-01 git.config_set user.email me@example.com cwd=/tmp/local_copy
-core-rtr-p-01:
-    - me@example.com
-
-# salt core-rtr-p-01 git.config_set user.name ksator cwd=/tmp/local_copy
-core-rtr-p-01:
-    - ksator
-    
-# salt core-rtr-p-01 git.config_get user.name cwd=/tmp/local_copy
-core-rtr-p-01:
-    ksator
-
-# salt core-rtr-p-01 git.pull /tmp/local_copy
-core-rtr-p-01:
-    Already up-to-date.
-
-# salt core-rtr-p-01 file.touch "/tmp/local_copy/test.txt"
-core-rtr-p-01:
-    True
-
-# salt core-rtr-p-01 file.write "/tmp/local_copy/test.txt" "hello from SaltStack using git executiom module"
-core-rtr-p-01:
-    Wrote 1 lines to "/tmp/local_copy/test.txt"
-
-# salt core-rtr-p-01 cmd.run "more /tmp/local_copy/test.txt"
-core-rtr-p-01:
-    ::::::::::::::
-    /tmp/local_copy/test.txt
-    ::::::::::::::
-    hello from SaltStack using git executiom module
-
-# salt core-rtr-p-01 git.status /tmp/local_copy
-core-rtr-p-01:
-    ----------
-    untracked:
-        - test.txt
-
-# salt core-rtr-p-01 git.add /tmp/local_copy /tmp/local_copy/test.txt
-core-rtr-p-01:
-    add 'test.txt'
-
-# salt core-rtr-p-01 git.status /tmp/local_copy
-core-rtr-p-01:
-    ----------
-    new:
-        - test.txt
-
-# salt core-rtr-p-01 git.commit /tmp/local_copy 'The commit message'
-core-rtr-p-01:
-    [master 60f5943] The commit message
-     1 file changed, 1 insertion(+)
-     create mode 100644 test.txt
-
-# salt core-rtr-p-01 git.status /tmp/local_copy
-core-rtr-p-01:
-    ----------
-
-# salt core-rtr-p-01 git.push /tmp/local_copy origin master identity="/root/.ssh/id_rsa"
-core-rtr-p-01:
+# salt saltstack_minion_id git.clone /tmp/local_copy git@gitlab_ip_address:organization/data_collected.git identity="/root/.ssh/id_rsa"
+# salt saltstack_minion_id cmd.run "ls /tmp/local_copy"
+# salt saltstack_minion_id git.config_set user.email me@example.com cwd=/tmp/local_copy
+# salt saltstack_minion_id git.config_set user.name ksator cwd=/tmp/local_copy
+# salt saltstack_minion_id git.config_get user.name cwd=/tmp/local_copy
+# salt saltstack_minion_id git.pull /tmp/local_copy
+# salt saltstack_minion_id file.touch "/tmp/local_copy/test.txt"
+# salt saltstack_minion_id file.write "/tmp/local_copy/test.txt" "hello from SaltStack using git execution module"
+# salt saltstack_minion_id cmd.run "more /tmp/local_copy/test.txt"
+# salt saltstack_minion_id git.status /tmp/local_copy
+# salt saltstack_minion_id git.add /tmp/local_copy /tmp/local_copy/test.txt
+# salt saltstack_minion_id git.status /tmp/local_copy
+# salt saltstack_minion_id git.commit /tmp/local_copy 'The commit message'
+# salt saltstack_minion_id git.status /tmp/local_copy
+# salt saltstack_minion_id git.push /tmp/local_copy origin master identity="/root/.ssh/id_rsa"
 ```
-The above commands pushed the file [test.txt](test.txt) to this repository  
+The above commands pushed the file [test.txt](test.txt) to this repository  ```data_collected``` of the gitlab organization ```organization```
 
-### Test your Junos proxy daemons
-
-ssh to the Salt master.
-
-On the Salt master, list all the keys. 
-```
-# salt-key -L
-```
-Run this command to check if the minions are up and responding to the master. This is not an ICMP ping.
-```
-# salt -G 'roles:minion' test.ping
-```
-```
-# salt core-rtr-p-01 test.ping
-core-rtr-p-01:
-    True
-```
-List the grains: 
-```
-# salt core-rtr-p-01 grains.ls
-...
-```
-Get the value of the grain nodename. 
-```
-# salt core-rtr-p-01 grains.item nodename
-core-rtr-p-01:
-    ----------
-    nodename:
-        svl-util-01
-```
-So, the junos proxy daemon ```core-rtr-p-01``` is running on the minion ```svl-util-01```  
-
-The Salt Junos proxy has some requirements (junos-eznc python library and other dependencies).
-```
-# salt svl-util-01 cmd.run "pip list | grep junos"
-svl-util-01:
-    junos-eznc (2.1.7)
-```
-### Junos execution modules
-
-Run this command on the master to ask to a proxy to use a Junos execution module:   
-```
-# salt core-rtr-p-01 junos.cli "show chassis hardware"
-core-rtr-p-01:
-    ----------
-    message:
-
-        Hardware inventory:
-        Item             Version  Part number  Serial number     Description
-        Chassis                                VM5AA80D5BB2      VMX
-        Midplane
-        Routing Engine 0                                         RE-VMX
-        CB 0                                                     VMX SCB
-        FPC 0                                                    Virtual FPC
-          CPU            Rev. 1.0 RIOT-LITE    BUILTIN
-          MIC 0                                                  Virtual
-            PIC 0                 BUILTIN      BUILTIN           Virtual
-    out:
-        True
-```
-### Junos state modules 
+## state files to collect Junos commands
 
 The files [collect_show_commands_example_1.sls](collect_show_commands_example_1.sls) and [collect_show_commands_example_2.sls](collect_show_commands_example_2.sls) use a diff syntax but they are equivalents.  
 
-#### Syntax 1
+### Syntax 1
 
 ```
-# more /srv/salt/collect_junos_show_commands_example_1.sls
-show version:
-  junos:
-    - cli
-    - dest: /tmp/show_version.txt
-    - format: text
-show chassis hardware:
-  junos:
-    - cli
-    - dest: /tmp/show_chassis_hardware.txt
-    - format: text
+# more network_model/collect_show_commands_example_1.sls
 ```
-Run this command on the master to ask to the proxy core-rtr-p-01 to execute the sls file  [collect_show_commands_example_1.sls](collect_show_commands_example_1.sls).
+Run this command on the master to ask to the proxy ```dc-vmx-1``` to execute the state file  [collect_show_commands_example_1.sls](states/collect_show_commands_example_1.sls).
 ```
-# salt core-rtr-p-01 state.apply collect_show_commands_example_1
+# salt dc-vmx-1 state.apply collect_show_commands_example_1
+# ls /tmp/show_chassis_hardware.txt
+# ls /tmp/show_version.txt
 ```
 
-#### Syntax 2
+### Syntax 2
 ```
-# more /srv/salt/collect_show_commands_example_2.sls
-show_version:
-  junos.cli:
-    - name: show version
-    - dest: /tmp/show_version.txt
-    - format: text
-show_chassis_hardware:
-  junos.cli:
-    - name: show chassis hardware
-    - dest: /tmp/show_chassis_hardware.txt
-    - format: text
+# more network_model/collect_show_commands_example_2.sls
 ```
-Run this command on the master to ask to the proxy core-rtr-p-01 to execute the sls file  [collect_show_commands_example_2.sls](collect_show_commands_example_2.sls).
+Run this command on the master to ask to the proxy ```dc-vmx-1``` to execute the state file  [collect_show_commands_example_2.sls](states/collect_show_commands_example_2.sls).
 ```
-# salt core-rtr-p-01 state.apply collect_show_commands_example_2
-```
-### sls file to collect junos show commands and to archive the output to git
-
-This sls file [collect_data_and_archive_to_git.sls](collect_data_and_archive_to_git.sls) collectes data from junos devices (show commands) and archive the data collected on a git server  
-
-Add this file in the ```junos``` directory of the ```organization/network_model``` repository (```gitfs_remotes```) .  
-
-### Test your automation content manually from the master
-
-Example with the proxy ```core-rtr-p-02``` (it manages the network device ```core-rtr-p-02```).   
-Run this command on the master to ask to the proxy ```core-rtr-p-01``` to execute it.  
-```
-salt core-rtr-p-01 state.apply collect_data_and_archive_to_git
+# salt dc-vmx-1 state.apply collect_show_commands_example_2
+# ls /tmp/show_chassis_hardware.txt
+# ls /tmp/show_version.txt
 ```
 
-The data collected by the proxy ```core-rtr-p-01``` is archived in the directory [core-rtr-p-01](core-rtr-p-01)  
+
+## state file to collect junos show commands and to archive the output to git
+
+The state file [collect_data_and_archive_to_git.sls](states/collect_data_and_archive_to_git.sls) collectes data from junos devices (show commands) and archives the data collected on a git server
+```
+# more network_model/collect_data_and_archive_to_git.sls
+```
+The pillar [data_collection.sls](pillars/data_collection.sls) is used by the state file [collect_data_and_archive_to_git.sls](states/collect_data_and_archive_to_git.sls)
+It has the list of show commands we want SaltStack to collect.
+```
+# more network_parameters/data_collection.sls
+```
 
 
-###  Update the Salt reactor
-
-Update the Salt reactor file  
-The reactor binds sls files to event tags. The reactor has a list of event tags to be matched, and each event tag has a list of reactor SLS files to be run. So these sls files define the SaltStack reactions.  
-Update the reactor.  
-This reactor binds ```salt/engines/hook/appformix_to_saltstack``` to ```/srv/reactor/automate_show_commands.sls``` 
-```
-# more /etc/salt/master.d/reactor.conf
-reactor:
-   - 'salt/engines/hook/appformix_to_saltstack':
-       - /srv/reactor/automate_show_commands.sls
-```
-
-Restart the Salt master:
-```
-service salt-master stop
-service salt-master start
-```
-
-The command ```salt-run reactor.list``` lists currently configured reactors:  
-```
-salt-run reactor.list
-```
-
-Create the sls reactor file ```/srv/reactor/automate_show_commands.sls```.  
-It parses the data from the ZMQ message that has the tags ```salt/engines/hook/appformix_to_saltstack``` and extracts the network device name.  
-It then ask to the Junos proxy minion that manages the "faulty" device to apply the ```junos/collect_data_and_archive_to_git.sls``` file.  
-the ```junos/collect_data_and_archive_to_git.sls``` file executed by the Junos proxy minion collects show commands from the "faulty" device and archive the data collected to a git server. 
-
-```
-# more /srv/reactor/automate_show_commands.sls
-{% set body_json = data['body']|load_json %}
-{% set devicename = body_json['status']['entityId'] %}
-automate_show_commands:
-  local.state.apply:
-    - tgt: "{{ devicename }}"
-    - arg:
-      - collect_data_and_archive_to_git
-```
 
 # Run the demo: 
 
@@ -1214,4 +1034,5 @@ Run this command on the master:
 
 The data collected by the proxy ```core-rtr-p-01```  is archived in the directory [core-rtr-p-01](core-rtr-p-01)  
 The data collected by the proxy ```core-rtr-p-02```  is archived in the directory [core-rtr-p-02](core-rtr-p-02)
+
 
