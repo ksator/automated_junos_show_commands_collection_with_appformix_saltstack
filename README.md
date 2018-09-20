@@ -1,11 +1,11 @@
 # Documentation structure
 
-[About the demo](#about-the-demo) 
+[About the demo](#about-the-demo)  
 [Requirements to run the demo](#requirements-to-run-the-demo)  
-[Appformix](#appformix)  
+[Appformix](#appformix-1)  
 [Docker](#docker)  
-[Gitlab](#gitlab)  
-[SaltStack](#SaltStack)  
+[Gitlab](#gitlab-1)  
+[SaltStack](#saltstack-1)  
 [Familiarize yourself with this setup](#familiarize-yourself-with-this-setup)  
 [Run the demo](#run-the-demo)  
 
