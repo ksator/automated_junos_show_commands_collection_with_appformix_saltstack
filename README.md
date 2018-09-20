@@ -977,11 +977,11 @@ setup
 
 You can do it from the Appformix GUI, Alarms, add rule.  
 Then, as example:   
-Name: in_unicast_packets_core-rtr-p-02,  
+Name: in_unicast_packets_dc-vmx-1,  
 Module: Alarms,  
 Alarm rule type: Static,  
 scope: network devices,  
-network device/Aggregate: core-rtr-p-02,  
+network device/Aggregate: dc-vmx-1,  
 generate: generate alert,  
 For metric: interface_in_unicast_packets,  
 When: Average,  
