@@ -827,7 +827,7 @@ run these commands to copy [these states files](states) at the root of the repos
 ### Test your automation content manually from the master
 
 Example with the proxy ```dc-vmx-1``` (it manages the network device ```dc-vmx-1```).   
-Run this command on the master to ask to the proxy ```dc-vmx-1``` to execute the state file [collect_data_and_archive_to_git](states/collect_data_and_archive_to_git).  
+Run this command on the master to ask to the proxy ```dc-vmx-1``` to execute the state file [collect_data_and_archive_to_git.sls](states/collect_data_and_archive_to_git.sls).  
 ```
 salt dc-vmx-1 state.apply collect_data_and_archive_to_git
 ```
