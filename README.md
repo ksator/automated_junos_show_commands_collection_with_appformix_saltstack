@@ -831,7 +831,7 @@ Run this command on the master to ask to the proxy ```dc-vmx-1``` to execute the
 ```
 salt dc-vmx-1 state.apply collect_data_and_archive_to_git
 ```
-The data collected by the proxy ```dc-vmx-1``` is archived in the directory [dc-vmx-1](dc-vmx-1) of the gitlab repository ```data_collected```  
+The data collected by the proxy ```dc-vmx-1``` is archived in the directory ```dc-vmx-1``` of the gitlab repository ```data_collected```  
 
 
 
@@ -923,7 +923,7 @@ The above commands pushed the file [test.txt](test.txt) to this repository  ```d
 
 ## state files to collect Junos commands
 
-The files [collect_show_commands_example_1.sls](collect_show_commands_example_1.sls) and [collect_show_commands_example_2.sls](collect_show_commands_example_2.sls) use a diff syntax but they are equivalents.  
+The files [collect_show_commands_example_1.sls](states/collect_show_commands_example_1.sls) and [collect_show_commands_example_2.sls](states/collect_show_commands_example_2.sls) use a diff syntax but they are equivalents.  
 
 ### Syntax 1
 
